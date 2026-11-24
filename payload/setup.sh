@@ -17,7 +17,18 @@ for deb in "$PWD"/packages/*.deb; do
   packages+=("$deb")
 done
 if ((${#packages[@]})); then
-  apt-get -y --no-download --no-install-recommends install "${packages[@]}"
+  offline=$(mktemp -d)
+  trap 'rm -rf -- "$offline"' EXIT
+  chmod 755 "$offline"
+
+  mkdir -p "$offline/sources" "$offline/lists/partial"
+  touch "$offline/empty.list"
+
+  apt-get -y --no-install-recommends \
+    -o Dir::Etc::sourcelist="$offline/empty.list" \
+    -o Dir::Etc::sourceparts="$offline/sources" \
+    -o Dir::State::lists="$offline/lists" \
+    install "${packages[@]}"
 fi
 dpkg --configure -a
 mono --version
