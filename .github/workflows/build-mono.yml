@@ -1,0 +1,19 @@
+name: Build offline Mono NET472 kit
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and validate offline
+        run: bash build_bundle.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Mono-Full-Offline-NET472
+          path: |
+            Mono_Full_Offline_NET472.zip
+            bundle/VALIDATION.log
+          if-no-files-found: warn
